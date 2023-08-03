@@ -18,24 +18,33 @@
               position: sticky;
               top: 0;
             }
+			.level:hover { 
+				color:yellow;
+				border: 1px solid yellow;
+			}
             td {
                 border-color: #6e6e6e;
+            }
+			
+			.level:hover td{
+                border-color: yellow;
             }
 		</style>
 	</head>
 	<body>
-		<input type="file" id="file-selector" multiple>
+		<input type="file" id="file-selector"><br>
+		<input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces</input>
+
 		<table id="output">
 			
 		</table>
 		<script>
             function writeStat(stat,tr){
 				if(stat) {
-					let plus = true;
+					let plus = stat >= 0;
 					const td = tr.insertCell();
 					if(stat <0){
 						td.style.color = "red"
-						plus = false;
 					}
 					td.appendChild(document.createTextNode((plus ? "+" : "")+stat))
 				} else {
@@ -50,9 +59,21 @@
 				    const td = tr.insertCell();
 					if(stat <0){
 						td.style.color = "red"
-						plus = false;
 					}
-					td.appendChild(document.createTextNode(String(stat).substring(String(stat).indexOf(":") + 1)))
+					namespaces = document.querySelector('.namespaces').checked;
+					if(namespaces) {
+						let text = "";
+						for(let j = 0; j < stat.length;j++){
+							text += String(stat[j])+", "
+						}
+						td.appendChild(document.createTextNode(text.substring(0,text.length-2)))
+					} else {
+					let text = "";
+						for(let j = 0; j < stat.length;j++){
+							text += String(stat[j]).substring(String(stat[j]).indexOf(":") + 1)+", "
+						}
+						td.appendChild(document.createTextNode(text.substring(0,text.length-2)))
+					}
 				} else {
 					const td = tr.insertCell();
 					td.style.color = "#888"
@@ -60,22 +81,22 @@
 				}
 			}
 			
-			const fileSelector = document.getElementById('file-selector');
-			fileSelector.addEventListener('change', (event) => {
+			function loadTable(file){
+			console.log(file)
 				table = document.getElementById('output');
 				table.border = 0;
 				table.innerHTML = "";
-				const files = event.target.files;
-				console.log(files[0].name)
+				console.log(file.name)
 				var fr = new FileReader();
 				fr.onload=function(){
 					const obj = JSON.parse(fr.result);
                         var thead = table.createTHead();
 						const firstHeader = thead.insertRow();
 						nameCell = firstHeader.insertCell();
-						nameCell.appendChild(document.createTextNode(files[0].name))
+						nameCell.appendChild(document.createTextNode(file.name.substring(0,file.name.indexOf("."))))
 						nameCell.colSpan = 9;
 						nameCell.style = "font-size:36px; text-align:center;";
+						
 						const header = table.insertRow();
 						header.insertCell().outerHTML = "<th>Level</th>";
 						header.insertCell().outerHTML = "<th>Strength</th>";
@@ -90,10 +111,12 @@
                     var tbody = table.createTBody();
 					for (let i = 0; i <= 100; i++) {
 						const tr = tbody.insertRow();
+						tr.className = "level"
+
 						let level = obj[i];
 						const td = tr.insertCell();
+						
 						td.appendChild(document.createTextNode(i))
-
 						writeStat(level.str,tr)
 						writeStat(level.mag,tr)
 						writeStat(level.def,tr)
@@ -106,8 +129,21 @@
 					
 				}
 				
-				fr.readAsText(files[0]);
+				fr.readAsText(file);
+			}
+			
+			const fileSelector = document.getElementById('file-selector');
+			fileSelector.addEventListener('change', (event) => {
+				const files = event.target.files;
+				loadTable(files[0]);
 			  });
+			  
+			const checkbox = document.getElementById('namespaces');
+			checkbox.addEventListener('change', (event) => {
+				const file = fileSelector.files[0];
+				loadTable(file);
+			  });
+
 		</script>
 	</body>
 </html>
