@@ -29,14 +29,54 @@
 			.level:hover td{
                 border-color: yellow;
             }
+            h1 {
+                margin: auto;
+                width: 50%;
+                text-align: center;
+                padding: 10px;
+            }
+            .container {
+                width: 50%;
+                margin: auto;
+                padding: 10px;
+                text-align: center;
+            }
+            .info {
+                text-align: center;
+            }
+            #file-selector {
+                margin: 0 auto
+            }
 		</style>
 	</head>
 	<body>
-		<input type="button" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/warrior.json')">
-		<input type="button" id="warrior" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/mystic.json')">
-		<input type="button" id="warrior" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
-		<input type="file" id="file-selector">
-		<input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces</input>
+        <h1>Kingdom Keys Levelling Viewer</h1>
+        <p class="info">This displays the stat and ability gains from levels in Kingdom Keys. You can view the defaults included in Kingdom Keys as well as select a custom file for data packs.</p>
+        <p class="info">View the raw json files <a href="https://github.com/Wehavecookies56/Kingdom-Keys/tree/master/src/main/resources/data/kingdomkeys/leveling">here</a></p>
+        <div class="container">
+            <div class="row">
+                <div class="column column-33">
+                    <input type="button" class="button button-clear" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/warrior.json')">
+                </div>
+                <div class="column column-33">
+                    <input type="button" class="button button-clear" id="warrior" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/mystic.json')">
+                </div>
+                <div class="column column-33">
+                    <input type="button" class="button button-clear" id="warrior" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                   <p>Select a custom JSON file to view</p>
+                </div>
+                <div class="column column-33">
+		          <input type="file" id="file-selector">
+                </div>
+                <div class="column column-33">
+		          <input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces
+                </div>
+            </div>
+        </div>    
 
 		<table id="output">
 			
