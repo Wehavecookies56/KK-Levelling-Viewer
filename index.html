@@ -10,8 +10,9 @@
 			}
 			table {
 				margin: auto;
-				width: 50%;
+				width: 70%;
 				padding: 10px;
+				text-align: center;
 			}
             th {
               background-color:#202124;
@@ -73,7 +74,7 @@
 		          <input type="file" id="file-selector">
                 </div>
                 <div class="column column-33">
-		          <input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces
+		          <input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces</input>
                 </div>
             </div>
         </div>    
@@ -82,6 +83,8 @@
 			
 		</table>
 		<script>
+			var totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0;
+
 			function fetchData(url){
 				fetch(url)
 					.then(response => response.json())
@@ -89,14 +92,16 @@
 						populateTable(url.substring(url.lastIndexOf("/")+1),JSON.stringify(json))
 					});
 			}
-            function writeStat(stat,tr){
+			
+			//Write numeric stat
+            function writeStat(stat,tr, totalStat){
 				if(stat) {
 					let plus = stat >= 0;
 					const td = tr.insertCell();
 					if(stat <0){
 						td.style.color = "red"
 					}
-					td.appendChild(document.createTextNode((plus ? "+" : "")+stat))
+					td.appendChild(document.createTextNode((plus ? "+" : "")+stat+" ["+(totalStat)+"]"))
 				} else {
 					const td = tr.insertCell();
 					td.style.color = "#888"
@@ -104,12 +109,12 @@
 				}
 			}
 			
+			//Write array of stats
 			function writeStatArray(stat,tr){
 				if(stat) {
 				    const td = tr.insertCell();
-					if(stat <0){
-						td.style.color = "red"
-					}
+					td.style.color = stat < 0 ? "red" : td.style.color;
+					
 					namespaces = document.querySelector('.namespaces').checked;
 					if(namespaces) {
 						let text = "";
@@ -131,6 +136,7 @@
 				}
 			}
 			
+			//Load table based on a file
 			function loadTable(file){
 			console.log(file)
 				console.log(file.name)
@@ -143,6 +149,8 @@
 			}
 			
 			function populateTable(name,json){
+				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0;
+
 				console.log("Name: "+name)
 				table = document.getElementById('output');
 				table.border = 0;
@@ -168,6 +176,7 @@
 						header.insertCell().outerHTML = "<th>Shotlocks</th>";
 
                     var tbody = table.createTBody();
+
 					for (let i = 0; i <= 100; i++) {
 						const tr = tbody.insertRow();
 						tr.className = "level"
@@ -176,12 +185,21 @@
 						const td = tr.insertCell();
 						
 						td.appendChild(document.createTextNode(i))
-						writeStat(level.str,tr)
-						writeStat(level.mag,tr)
-						writeStat(level.def,tr)
-						writeStat(level.ap,tr)
-						writeStat(level.maxhp,tr)
-						writeStat(level.maxmp,tr)
+						if(i > 0) {
+							console.log(i+" "+totalAP);
+							totalStr += level.str ? level.str : 0;
+							totalMag += level.mag ? level.mag : 0;
+							totalDef += level.def ? level.def : 0;
+							totalAP += level.ap ? level.ap : 0;
+							totalHP += level.maxhp ? level.maxhp : 0;
+							totalMP += level.maxmp ? level.maxmp : 0;
+						}
+						writeStat(level.str,tr, totalStr)
+						writeStat(level.mag,tr, totalMag)
+						writeStat(level.def,tr, totalDef)
+						writeStat(level.ap,tr, totalAP)
+						writeStat(level.maxhp,tr, totalHP)
+						writeStat(level.maxmp,tr, totalMP)
 						writeStatArray(level.abilities,tr)
 						writeStatArray(level.shotlocks,tr)
 					}
