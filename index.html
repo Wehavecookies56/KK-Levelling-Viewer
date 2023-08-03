@@ -48,43 +48,102 @@
             #file-selector {
                 margin: 0 auto
             }
+			#drop_zone {
+				position:absolute;
+				width: 100%;
+				height: 100%;
+			}
+			.settings {
+				position:absolute;
+				top:10%;
+				left:-10px;
+				width:200px;
+				padding:15px 5px 10px 25px;
+				border-radius:10px;
+				background-color:#C97B4E;
+				font-weight:bold;
+			}
 		</style>
 	</head>
 	<body>
+		<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragEndHandler(event);">
+		</div>
         <h1>Kingdom Keys Levelling Viewer</h1>
         <p class="info">This displays the stat and ability gains from levels in Kingdom Keys. You can view the defaults included in Kingdom Keys as well as select a custom file for data packs.</p>
         <p class="info">View the raw json files <a href="https://github.com/Wehavecookies56/Kingdom-Keys/tree/master/src/main/resources/data/kingdomkeys/leveling">here</a></p>
+		<!--<input type="file" id="file-selector">-->
+		<p id="dragText" class="info" style="font-size:36px;"><b>Select a default file or drag and drop a custom JSON file in this website to view it</b></p>
+		<div class="settings">
+			<input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;"> Show namespaces</input>
+		</div>
         <div class="container">
             <div class="row">
                 <div class="column column-33">
-                    <input type="button" class="button button-clear" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/warrior.json')">
+                    <input type="button" class="button" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/warrior.json')">
                 </div>
                 <div class="column column-33">
-                    <input type="button" class="button button-clear" id="warrior" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/mystic.json')">
+                    <input type="button" class="button" id="mystic" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/mystic.json')">
                 </div>
                 <div class="column column-33">
-                    <input type="button" class="button button-clear" id="warrior" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
+                    <input type="button" class="button" id="guardian" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
                 </div>
             </div>
-            <div class="row">
-                <div>
-                   <p>Select a custom JSON file to view</p>
-                </div>
-                <div class="column column-33">
-		          <input type="file" id="file-selector">
-                </div>
-                <div class="column column-33">
-		          <input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces</input>
-                </div>
-            </div>
-        </div>    
+
+			
+        </div>
 
 		<table id="output">
 			
 		</table>
 		<script>
 			var totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0;
+			var globalData = [];
+			function dragEndHandler(ev) {
+				console.log("Ended dragging");
+				dropZone = document.getElementById("drop_zone");
+				dropZone.style.border = "";
+			  // Prevent default behavior (Prevent file from being opened)
+			  ev.preventDefault();
+			}
+			
+			function dragOverHandler(ev) {
+				console.log("File(s) in drop zone");
+				dropZone = document.getElementById("drop_zone");
+				dropZone.style.border = "5px solid red";
+			  // Prevent default behavior (Prevent file from being opened)
+			  ev.preventDefault();
+			}
+			
+			function dropHandler(ev) {
+			//  console.log("File(s) dropped");
 
+			  // Prevent default behavior (Prevent file from being opened)
+			  ev.preventDefault();
+
+			  if (ev.dataTransfer.items) {
+				// Use DataTransferItemList interface to access the file(s)
+				[...ev.dataTransfer.items].forEach((item, i) => {
+				  // If dropped items aren't files, reject them
+				  if (item.kind === "file") {
+					const file = item.getAsFile();
+					console.log(file.name);
+					loadTable(file);
+					dropZone = document.getElementById("drop_zone");
+					dropZone.style.border = "";
+
+				  }
+				});
+			  } else {
+				// Use DataTransfer interface to access the file(s)
+				[...ev.dataTransfer.files].forEach((file, i) => {
+					console.log(file.name);
+					loadTable(file);
+					dropZone = document.getElementById("drop_zone");
+					dropZone.style.border = "";
+
+				});
+			  }
+			}
 			function fetchData(url){
 				fetch(url)
 					.then(response => response.json())
@@ -141,7 +200,7 @@
 			console.log(file)
 				console.log(file.name)
 				var fr = new FileReader();
-				fr.onload=function(){
+				fr.onload = function(){
 					populateTable(file.name,fr.result);
 				}
 				
@@ -149,8 +208,14 @@
 			}
 			
 			function populateTable(name,json){
+				globalData[0] = name;
+				globalData[1] = json;
+				
 				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0;
 
+				dragText = document.getElementById("dragText");
+				dragText.style.display = "none";
+				
 				console.log("Name: "+name)
 				table = document.getElementById('output');
 				table.border = 0;
@@ -205,17 +270,19 @@
 					}
 			}
 			
-			const fileSelector = document.getElementById('file-selector');
+			/*const fileSelector = document.getElementById('file-selector');
 			fileSelector.addEventListener('change', (event) => {
 				const files = event.target.files;
 				loadTable(files[0]);
-			  });
+			  });*/
 			  
 			const checkbox = document.getElementById('namespaces');
 			checkbox.addEventListener('change', (event) => {
-				const file = fileSelector.files[0];
-				loadTable(file);
-			  });
+				console.log("Global JSON: "+globalData);
+				if(globalData.length == 2){
+					populateTable(globalData[0],globalData[1]);
+				}
+			});
 
 		</script>
 	</body>
