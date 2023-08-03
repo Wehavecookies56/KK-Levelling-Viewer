@@ -1,0 +1,151 @@
+<html>
+	<head>
+		<style>
+			body{
+				background-color:#202124;
+				color:#FFFFFF;
+			}
+		</style>
+		
+	</head>
+	<body>
+		<input type="file" id="file-selector" multiple>
+		<table id="output" border=1>
+			
+		</table>
+		<p id="test"></p>
+		<script>
+			const fileSelector = document.getElementById('file-selector');
+			fileSelector.addEventListener('change', (event) => {
+				table = document.getElementById('output');
+				table.innerHTML = "";
+				const files = event.target.files;
+				console.log(files[0].name)
+				var fr = new FileReader();
+				fr.onload=function(){
+					//document.getElementById('test').textContent=fr.result;
+					const obj = JSON.parse(fr.result);
+						const header = table.insertRow();
+						header.insertCell().appendChild(document.createTextNode("Level"))
+						header.insertCell().appendChild(document.createTextNode("Strength"))
+						header.insertCell().appendChild(document.createTextNode("Magic"))
+						header.insertCell().appendChild(document.createTextNode("Defense"))
+						header.insertCell().appendChild(document.createTextNode("AP"))
+						header.insertCell().appendChild(document.createTextNode("Max HP"))
+						header.insertCell().appendChild(document.createTextNode("Max MP"))
+						header.insertCell().appendChild(document.createTextNode("Abilities"))
+						header.insertCell().appendChild(document.createTextNode("Shotlocks"))
+
+					for (let i = 0; i <= 100; i++) {
+						let plus = true;
+						const tr = table.insertRow();
+						let level = obj[i];
+						console.log(i+" "+level)
+						const td = tr.insertCell();
+						td.appendChild(document.createTextNode(i))
+
+						if(level.str) {
+						    const td = tr.insertCell();
+							if(level.str <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode((plus ? "+" : "")+level.str))
+						} else {
+						    const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+						if(level.mag) {
+						    const td = tr.insertCell();
+							if(level.mag <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode((plus ? "+" : "")+level.mag))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+
+
+						if(level.def) {
+						    const td = tr.insertCell();
+							if(level.def <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode((plus ? "+" : "")+level.def))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+						
+						if(level.ap) {
+						    const td = tr.insertCell();
+							if(level.ap <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode((plus ? "+" : "")+level.ap))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+						
+						if(level.maxhp) {
+						    const td = tr.insertCell();
+							if(level.maxhp <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode((plus ? "+" : "")+level.maxhp))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+						
+						if(level.maxmp) {
+						    const td = tr.insertCell();
+							if(level.maxmp <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode((plus ? "+" : "")+level.maxmp))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+						
+						if(level.abilities) {
+						    const td = tr.insertCell();
+							if(level.abilities <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode(level.abilities))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+						
+						if(level.shotlocks) {
+						    const td = tr.insertCell();
+							if(level.shotlocks <0){
+								td.style.color = "red"
+								plus = false;
+							}
+							td.appendChild(document.createTextNode(level.shotlocks))
+						} else {
+							const td = tr.insertCell();
+							td.appendChild(document.createTextNode("N/A"))
+						}
+
+					}
+					
+				}
+				
+				fr.readAsText(files[0]);
+			  });
+		</script>
+	</body>
+</html>
