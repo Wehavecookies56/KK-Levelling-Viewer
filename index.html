@@ -32,13 +32,23 @@
 		</style>
 	</head>
 	<body>
-		<input type="file" id="file-selector"><br>
+		<input type="button" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/warrior.json')">
+		<input type="button" id="warrior" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/mystic.json')">
+		<input type="button" id="warrior" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/main/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
+		<input type="file" id="file-selector">
 		<input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;">Show namespaces</input>
 
 		<table id="output">
 			
 		</table>
 		<script>
+			function fetchData(url){
+				fetch(url)
+					.then(response => response.json())
+					.then(json => {
+						populateTable(url.substring(url.lastIndexOf("/")+1),JSON.stringify(json))
+					});
+			}
             function writeStat(stat,tr){
 				if(stat) {
 					let plus = stat >= 0;
@@ -83,17 +93,26 @@
 			
 			function loadTable(file){
 			console.log(file)
-				table = document.getElementById('output');
-				table.border = 0;
-				table.innerHTML = "";
 				console.log(file.name)
 				var fr = new FileReader();
 				fr.onload=function(){
-					const obj = JSON.parse(fr.result);
+					populateTable(file.name,fr.result);
+				}
+				
+				fr.readAsText(file);
+			}
+			
+			function populateTable(name,json){
+				console.log("Name: "+name)
+				table = document.getElementById('output');
+				table.border = 0;
+				table.innerHTML = "";
+
+				const obj = JSON.parse(json);
                         var thead = table.createTHead();
 						const firstHeader = thead.insertRow();
 						nameCell = firstHeader.insertCell();
-						nameCell.appendChild(document.createTextNode(file.name.substring(0,file.name.indexOf("."))))
+						nameCell.appendChild(document.createTextNode(name.substring(0,name.indexOf(".")).toUpperCase()))
 						nameCell.colSpan = 9;
 						nameCell.style = "font-size:36px; text-align:center;";
 						
@@ -126,10 +145,6 @@
 						writeStatArray(level.abilities,tr)
 						writeStatArray(level.shotlocks,tr)
 					}
-					
-				}
-				
-				fr.readAsText(file);
 			}
 			
 			const fileSelector = document.getElementById('file-selector');
