@@ -93,10 +93,9 @@
         </div>
 
 		<table id="output">
-			
+			<!-- Empty output table -->
 		</table>
 		<script>
-			var totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0;
 			var globalData = [];
 			function dragEndHandler(ev) {
 				console.log("Ended dragging");
@@ -115,8 +114,6 @@
 			}
 			
 			function dropHandler(ev) {
-			//  console.log("File(s) dropped");
-
 			  // Prevent default behavior (Prevent file from being opened)
 			  ev.preventDefault();
 
@@ -151,6 +148,8 @@
 						populateTable(url.substring(url.lastIndexOf("/")+1),JSON.stringify(json))
 					});
 			}
+			
+		
 			
 			//Write numeric stat
             function writeStat(stat,tr, totalStat){
@@ -208,10 +207,12 @@
 			}
 			
 			function populateTable(name,json){
+			const searchParams = new URLSearchParams(window.location.search);
+console.log(searchParams);
 				globalData[0] = name;
 				globalData[1] = json;
 				
-				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0;
+				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0, totalArmor = 0, totalAccessories = 0;
 
 				dragText = document.getElementById("dragText");
 				dragText.style.display = "none";
@@ -226,7 +227,7 @@
 						const firstHeader = thead.insertRow();
 						nameCell = firstHeader.insertCell();
 						nameCell.appendChild(document.createTextNode(name.substring(0,name.indexOf(".")).toUpperCase()))
-						nameCell.colSpan = 9;
+						nameCell.colSpan = 11;
 						nameCell.style = "font-size:36px; text-align:center;";
 						
 						const header = table.insertRow();
@@ -237,6 +238,8 @@
 						header.insertCell().outerHTML = "<th>AP</th>";
 						header.insertCell().outerHTML = "<th>Max HP</th>";
 						header.insertCell().outerHTML = "<th>Max MP</th>";
+						header.insertCell().outerHTML = "<th>Armor</th>";
+						header.insertCell().outerHTML = "<th>Accessory</th>";
 						header.insertCell().outerHTML = "<th>Abilities</th>";
 						header.insertCell().outerHTML = "<th>Shotlocks</th>";
 
@@ -258,6 +261,8 @@
 							totalAP += level.ap ? level.ap : 0;
 							totalHP += level.maxhp ? level.maxhp : 0;
 							totalMP += level.maxmp ? level.maxmp : 0;
+							totalArmor += level.max_armors ? level.max_armors : 0;
+							totalAccessories += level.max_accessories ? level.max_accessories : 0;
 						}
 						writeStat(level.str,tr, totalStr)
 						writeStat(level.mag,tr, totalMag)
@@ -265,6 +270,8 @@
 						writeStat(level.ap,tr, totalAP)
 						writeStat(level.maxhp,tr, totalHP)
 						writeStat(level.maxmp,tr, totalMP)
+						writeStat(level.max_armors,tr, totalArmor)
+						writeStat(level.max_accessories,tr, totalAccessories)
 						writeStatArray(level.abilities,tr)
 						writeStatArray(level.shotlocks,tr)
 					}
