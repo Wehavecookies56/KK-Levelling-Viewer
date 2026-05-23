@@ -209,7 +209,7 @@
 			
 			function populateTable(name,json){
 			const searchParams = new URLSearchParams(window.location.search);
-console.log(searchParams);
+				console.log(searchParams);
 				globalData[0] = name;
 				globalData[1] = json;
 				
@@ -296,6 +296,25 @@ console.log(searchParams);
 				}
 			});
 
+			window.addEventListener("load", () => {
+				const params = new URLSearchParams(window.location.search);
+
+				const jsonUrl = params.get("url");
+
+				if(jsonUrl) {
+					fetch(jsonUrl)
+						.then(response => response.json())
+						.then(json => {
+							const fileName = jsonUrl.substring(jsonUrl.lastIndexOf("/") + 1);
+
+							populateTable(fileName, JSON.stringify(json));
+						})
+						.catch(err => {
+							console.error(err);
+							alert("Failed to load JSON from URL");
+						});
+				}
+			});
 		</script>
 	</body>
 </html>
