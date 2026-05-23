@@ -212,7 +212,7 @@ console.log(searchParams);
 				globalData[0] = name;
 				globalData[1] = json;
 				
-				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0, totalArmor = 0, totalAccessories = 0;
+				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0, totalArmor = 0, totalAccessories = 0, totalSpells = 0;
 
 				dragText = document.getElementById("dragText");
 				dragText.style.display = "none";
@@ -227,7 +227,8 @@ console.log(searchParams);
 						const firstHeader = thead.insertRow();
 						nameCell = firstHeader.insertCell();
 						nameCell.appendChild(document.createTextNode(name.substring(0,name.indexOf(".")).toUpperCase()))
-						nameCell.colSpan = 11;
+						nameCell.appendChild(document.createTextNode(" (Version: " + (obj.version ?? "N/A")+ ")"))
+						nameCell.colSpan = 12;
 						nameCell.style = "font-size:36px; text-align:center;";
 						
 						const header = table.insertRow();
@@ -240,6 +241,7 @@ console.log(searchParams);
 						header.insertCell().outerHTML = "<th>Max MP</th>";
 						header.insertCell().outerHTML = "<th>Armor</th>";
 						header.insertCell().outerHTML = "<th>Accessory</th>";
+						header.insertCell().outerHTML = "<th>Spell</th>";
 						header.insertCell().outerHTML = "<th>Abilities</th>";
 						header.insertCell().outerHTML = "<th>Shotlocks</th>";
 
@@ -249,7 +251,7 @@ console.log(searchParams);
 						const tr = tbody.insertRow();
 						tr.className = "level"
 
-						let level = obj[i];
+						let level = obj.levels?.[i] || {};
 						const td = tr.insertCell();
 						
 						td.appendChild(document.createTextNode(i))
@@ -263,6 +265,7 @@ console.log(searchParams);
 							totalMP += level.maxmp ? level.maxmp : 0;
 							totalArmor += level.max_armors ? level.max_armors : 0;
 							totalAccessories += level.max_accessories ? level.max_accessories : 0;
+							totalSpells += level.max_magics ? level.max_magics : 0;
 						}
 						writeStat(level.str,tr, totalStr)
 						writeStat(level.mag,tr, totalMag)
@@ -272,6 +275,7 @@ console.log(searchParams);
 						writeStat(level.maxmp,tr, totalMP)
 						writeStat(level.max_armors,tr, totalArmor)
 						writeStat(level.max_accessories,tr, totalAccessories)
+						writeStat(level.max_magics,tr, totalSpells)
 						writeStatArray(level.abilities,tr)
 						writeStatArray(level.shotlocks,tr)
 					}
