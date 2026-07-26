@@ -49,10 +49,18 @@
                 margin: 0 auto
             }
 			#drop_zone {
-				position:absolute;
+				position: fixed;
+				top: 0;
+				left: 0;
 				width: 100%;
-				height: 75%;
-				bottom: 0px;
+				height: 100%;
+				box-sizing: border-box;
+				pointer-events: none;
+				z-index: 9999;
+				border: 5px solid transparent;
+			}
+			#drop_zone.dragging {
+				border-color: red;
 			}
 			.settings {
 				position:absolute;
@@ -64,18 +72,32 @@
 				background-color:#C97B4E;
 				font-weight:bold;
 			}
+			.settings .lang-title {
+				display: block;
+				margin-bottom: 6px;
+			}
+			.settings label {
+				display: block;
+				font-weight: normal;
+				cursor: pointer;
+			}
 		</style>
 	</head>
 	<body>
-		<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragEndHandler(event);">
-		</div>
+		<div id="drop_zone"></div>
         <h1>Kingdom Keys Levelling Viewer</h1>
         <p class="info">This displays the stat and ability gains from levels in Kingdom Keys. You can view the defaults included in Kingdom Keys as well as select a custom file for data packs.</p>
         <p class="info">View the raw json files <a href="https://github.com/Wehavecookies56/Kingdom-Keys/tree/master/src/generated/resources/data/kingdomkeys/leveling">here</a></p>
 		<!--<input type="file" id="file-selector">-->
 		<p id="dragText" class="info" style="font-size:36px;"><b>Select a default file or drag and drop a custom JSON file below to view it</b></p>
 		<div class="settings">
-			<input type="checkbox" id="namespaces" class="namespaces" style="position:sticky;"> Show namespaces</input>
+			<b class="lang-title">Language</b>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="en" checked> English</label>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="es"> Español</label>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="de"> Deutsch</label>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="ja"> 日本語</label>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="ru"> Русский</label>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="raw"> [NAMESPACES]</label>
 		</div>
         <div class="container">
             <div class="row">
@@ -98,46 +120,113 @@
 		</table>
 		<script>
 			var globalData = [];
-			var langData = {};
-			var langLoaded = false;
 
-			// Translation file for Kingdom Keys. This is regenerated alongside the mod, so it will
-			// pick up new/renamed abilities and items automatically.
-			const LANG_URL = "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/generated/resources/assets/kingdomkeys/lang/en_us.json";
+			// Translation files for Kingdom Keys. These live alongside the mod source and get
+			// updated as the mod does. Not every locale is fully translated yet, so lookups
+			// fall back to English, and finally to the raw id, when a key is missing.
+			const LANG_FILES = {
+				en: "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/generated/resources/assets/kingdomkeys/lang/en_us.json",
+				es: "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/generated/resources/assets/kingdomkeys/lang/es_es.json",
+				de: "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/main/resources/assets/kingdomkeys/lang/de_de.json",
+				ja: "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/main/resources/assets/kingdomkeys/lang/ja_jp.json",
+				ru: "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/main/resources/assets/kingdomkeys/lang/ru_ru.json"
+			};
 
-			fetch(LANG_URL)
-				.then(response => response.json())
-				.then(json => {
-					langData = json;
-					langLoaded = true;
-					// If a table is already showing, re-render it now that translations are ready.
-					if(globalData.length == 2){
-						populateTable(globalData[0], globalData[1]);
+			var langData = {}; // keyed by locale, e.g. langData.es["ability.ability_scan.name"]
+
+			// A couple of these lang files (de_de in particular) are hand maintained and contain
+			// // and /* */ comments plus the odd trailing comma, which is not valid strict JSON.
+			// Strip those out (while leaving string contents untouched) before parsing.
+			function stripJsonComments(text){
+				let out = "";
+				let inString = false;
+				for(let i = 0; i < text.length; i++){
+					const c = text[i];
+					if(inString){
+						out += c;
+						if(c === "\\" && i + 1 < text.length){
+							out += text[++i];
+							continue;
+						}
+						if(c === "\""){
+							inString = false;
+						}
+						continue;
 					}
-				})
-				.catch(err => {
-					console.error("Failed to load Kingdom Keys translations, falling back to raw ids", err);
-				});
+					if(c === "\""){
+						inString = true;
+						out += c;
+						continue;
+					}
+					if(c === "/" && text[i+1] === "/"){
+						const nl = text.indexOf("\n", i);
+						i = (nl === -1 ? text.length : nl) - 1;
+						continue;
+					}
+					if(c === "/" && text[i+1] === "*"){
+						const end = text.indexOf("*/", i + 2);
+						i = (end === -1 ? text.length : end + 1);
+						continue;
+					}
+					out += c;
+				}
+				return out.replace(/,(\s*[}\]])/g, "$1");
+			}
 
-			function dragEndHandler(ev) {
-				console.log("Ended dragging");
-				dropZone = document.getElementById("drop_zone");
-				dropZone.style.border = "";
-			  // Prevent default behavior (Prevent file from being opened)
-			  ev.preventDefault();
+			function fetchLangFile(url){
+				return fetch(url)
+					.then(response => response.text())
+					.then(text => JSON.parse(stripJsonComments(text)));
+			}
+
+			Promise.all(Object.entries(LANG_FILES).map(([locale, url]) =>
+				fetchLangFile(url)
+					.then(json => { langData[locale] = json; })
+					.catch(err => {
+						console.error("Failed to load '" + locale + "' translations, will fall back for that language", err);
+						langData[locale] = {};
+					})
+			)).then(() => {
+				// If a table is already showing, re-render it now that translations are ready.
+				if(globalData.length == 2){
+					populateTable(globalData[0], globalData[1]);
+				}
+			});
+
+			// The whole page accepts drag & drop, but the drop_zone div is only a visual
+			// highlight overlay (pointer-events: none), so it never blocks clicks or the
+			// row hover effect underneath. A counter is used because dragenter/dragleave
+			// fire for every child element the cursor passes over while dragging.
+			let dragCounter = 0;
+
+			function setDragHighlight(on){
+				document.getElementById("drop_zone").classList.toggle("dragging", on);
+			}
+
+			function dragEnterHandler(ev) {
+				ev.preventDefault();
+				dragCounter++;
+				setDragHighlight(true);
 			}
 
 			function dragOverHandler(ev) {
-				console.log("File(s) in drop zone");
-				dropZone = document.getElementById("drop_zone");
-				dropZone.style.border = "5px solid red";
-			  // Prevent default behavior (Prevent file from being opened)
-			  ev.preventDefault();
+				// Needed on every dragover to allow dropping.
+				ev.preventDefault();
+			}
+
+			function dragEndHandler(ev) {
+				ev.preventDefault();
+				dragCounter = Math.max(0, dragCounter - 1);
+				if(dragCounter === 0){
+					setDragHighlight(false);
+				}
 			}
 
 			function dropHandler(ev) {
 			  // Prevent default behavior (Prevent file from being opened)
 			  ev.preventDefault();
+			  dragCounter = 0;
+			  setDragHighlight(false);
 
 			  if (ev.dataTransfer.items) {
 				// Use DataTransferItemList interface to access the file(s)
@@ -147,9 +236,6 @@
 					const file = item.getAsFile();
 					console.log(file.name);
 					loadTable(file);
-					dropZone = document.getElementById("drop_zone");
-					dropZone.style.border = "";
-
 				  }
 				});
 			  } else {
@@ -157,12 +243,14 @@
 				[...ev.dataTransfer.files].forEach((file, i) => {
 					console.log(file.name);
 					loadTable(file);
-					dropZone = document.getElementById("drop_zone");
-					dropZone.style.border = "";
-
 				});
 			  }
 			}
+
+			window.addEventListener("dragenter", dragEnterHandler);
+			window.addEventListener("dragover", dragOverHandler);
+			window.addEventListener("dragleave", dragEndHandler);
+			window.addEventListener("drop", dropHandler);
 			function fetchData(url){
 				fetch(url)
 					.then(response => response.json())
@@ -180,37 +268,55 @@
 				return { namespace: id.substring(0, idx), path: id.substring(idx + 1) };
 			}
 
+			// Returns the currently selected language radio's value: "en", "es", "de", "ja",
+			// "ru", or "raw" (show namespaced ids untranslated).
+			function getLangMode(){
+				const checked = document.querySelector('input[name="lang-mode"]:checked');
+				return checked ? checked.value : "en";
+			}
+
+			// Looks up a translation key in the selected language, falling back to English,
+			// then to null if neither has it.
+			function translate(key){
+				const mode = getLangMode();
+				if(langData[mode] && langData[mode][key]){
+					return langData[mode][key];
+				}
+				if(langData.en && langData.en[key]){
+					return langData.en[key];
+				}
+				return null;
+			}
+
 			// Resolves the display name for an ability id, translating Kingdom Keys abilities
-			// using the loaded lang file. Abilities from other mods are shown as their raw id,
+			// using the loaded lang files. Abilities from other mods are shown as their raw id,
 			// same as before.
 			function getAbilityDisplayName(id){
-				const showNamespaces = document.querySelector('.namespaces').checked;
-				if(showNamespaces){
+				if(getLangMode() === "raw"){
 					return id;
 				}
 				const { namespace, path } = splitId(id);
 				if(namespace === "kingdomkeys"){
-					const key = "ability." + path + ".name";
-					if(langData && langData[key]){
-						return langData[key];
+					const name = translate("ability." + path + ".name");
+					if(name){
+						return name;
 					}
 				}
 				return path;
 			}
 
 			// Resolves the display name for an item id (used in item stacks), translating
-			// Kingdom Keys items using the loaded lang file. Items from other mods are shown
+			// Kingdom Keys items using the loaded lang files. Items from other mods are shown
 			// as their raw id, same as before.
 			function getItemDisplayName(id){
-				const showNamespaces = document.querySelector('.namespaces').checked;
-				if(showNamespaces){
+				if(getLangMode() === "raw"){
 					return id;
 				}
 				const { namespace, path } = splitId(id);
 				if(namespace === "kingdomkeys"){
-					const key = "item." + namespace + "." + path;
-					if(langData && langData[key]){
-						return langData[key];
+					const name = translate("item." + namespace + "." + path);
+					if(name){
+						return name;
 					}
 				}
 				return path;
@@ -364,12 +470,13 @@
 				loadTable(files[0]);
 			  });*/
 
-			const checkbox = document.getElementById('namespaces');
-			checkbox.addEventListener('change', (event) => {
-				console.log("Global JSON: "+globalData);
-				if(globalData.length == 2){
-					populateTable(globalData[0],globalData[1]);
-				}
+			document.querySelectorAll('input[name="lang-mode"]').forEach(radio => {
+				radio.addEventListener('change', (event) => {
+					console.log("Global JSON: "+globalData);
+					if(globalData.length == 2){
+						populateTable(globalData[0],globalData[1]);
+					}
+				});
 			});
 
 			window.addEventListener("load", () => {
