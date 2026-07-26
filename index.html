@@ -19,14 +19,14 @@
               position: sticky;
               top: 0;
             }
-			.level:hover { 
+			.level:hover {
 				color:yellow;
 				border: 1px solid yellow;
 			}
             td {
                 border-color: #6e6e6e;
             }
-			
+
 			.level:hover td{
                 border-color: yellow;
             }
@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-			
+
         </div>
 
 		<table id="output">
@@ -98,6 +98,27 @@
 		</table>
 		<script>
 			var globalData = [];
+			var langData = {};
+			var langLoaded = false;
+
+			// Translation file for Kingdom Keys. This is regenerated alongside the mod, so it will
+			// pick up new/renamed abilities and items automatically.
+			const LANG_URL = "https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/refs/heads/1.21.1/src/generated/resources/assets/kingdomkeys/lang/en_us.json";
+
+			fetch(LANG_URL)
+				.then(response => response.json())
+				.then(json => {
+					langData = json;
+					langLoaded = true;
+					// If a table is already showing, re-render it now that translations are ready.
+					if(globalData.length == 2){
+						populateTable(globalData[0], globalData[1]);
+					}
+				})
+				.catch(err => {
+					console.error("Failed to load Kingdom Keys translations, falling back to raw ids", err);
+				});
+
 			function dragEndHandler(ev) {
 				console.log("Ended dragging");
 				dropZone = document.getElementById("drop_zone");
@@ -105,7 +126,7 @@
 			  // Prevent default behavior (Prevent file from being opened)
 			  ev.preventDefault();
 			}
-			
+
 			function dragOverHandler(ev) {
 				console.log("File(s) in drop zone");
 				dropZone = document.getElementById("drop_zone");
@@ -113,7 +134,7 @@
 			  // Prevent default behavior (Prevent file from being opened)
 			  ev.preventDefault();
 			}
-			
+
 			function dropHandler(ev) {
 			  // Prevent default behavior (Prevent file from being opened)
 			  ev.preventDefault();
@@ -149,9 +170,52 @@
 						populateTable(url.substring(url.lastIndexOf("/")+1),JSON.stringify(json))
 					});
 			}
-			
-		
-			
+
+			// Splits a namespaced id like "kingdomkeys:ability_scan" into its namespace and path.
+			function splitId(id){
+				const idx = id.indexOf(":");
+				if(idx < 0){
+					return { namespace: "", path: id };
+				}
+				return { namespace: id.substring(0, idx), path: id.substring(idx + 1) };
+			}
+
+			// Resolves the display name for an ability id, translating Kingdom Keys abilities
+			// using the loaded lang file. Abilities from other mods are shown as their raw id,
+			// same as before.
+			function getAbilityDisplayName(id){
+				const showNamespaces = document.querySelector('.namespaces').checked;
+				if(showNamespaces){
+					return id;
+				}
+				const { namespace, path } = splitId(id);
+				if(namespace === "kingdomkeys"){
+					const key = "ability." + path + ".name";
+					if(langData && langData[key]){
+						return langData[key];
+					}
+				}
+				return path;
+			}
+
+			// Resolves the display name for an item id (used in item stacks), translating
+			// Kingdom Keys items using the loaded lang file. Items from other mods are shown
+			// as their raw id, same as before.
+			function getItemDisplayName(id){
+				const showNamespaces = document.querySelector('.namespaces').checked;
+				if(showNamespaces){
+					return id;
+				}
+				const { namespace, path } = splitId(id);
+				if(namespace === "kingdomkeys"){
+					const key = "item." + namespace + "." + path;
+					if(langData && langData[key]){
+						return langData[key];
+					}
+				}
+				return path;
+			}
+
 			//Write numeric stat
             function writeStat(stat,tr, totalStat){
 				if(stat) {
@@ -167,34 +231,46 @@
 					td.appendChild(document.createTextNode("N/A"))
 				}
 			}
-			
-			//Write array of stats
+
+			//Write array of ability ids, translating Kingdom Keys abilities to their display name
 			function writeStatArray(stat,tr){
 				if(stat) {
 				    const td = tr.insertCell();
 					td.style.color = stat < 0 ? "red" : td.style.color;
-					
-					namespaces = document.querySelector('.namespaces').checked;
-					if(namespaces) {
-						let text = "";
-						for(let j = 0; j < stat.length;j++){
-							text += String(stat[j])+", "
-						}
-						td.appendChild(document.createTextNode(text.substring(0,text.length-2)))
-					} else {
+
 					let text = "";
-						for(let j = 0; j < stat.length;j++){
-							text += String(stat[j]).substring(String(stat[j]).indexOf(":") + 1)+", "
-						}
-						td.appendChild(document.createTextNode(text.substring(0,text.length-2)))
+					for(let j = 0; j < stat.length;j++){
+						text += getAbilityDisplayName(String(stat[j]))+", "
 					}
+					td.appendChild(document.createTextNode(text.substring(0,text.length-2)))
 				} else {
 					const td = tr.insertCell();
 					td.style.color = "#888"
 					td.appendChild(document.createTextNode("N/A"))
 				}
 			}
-			
+
+			//Write the itemstack given at this level (array of {id, count}), translating
+			//Kingdom Keys items to their display name
+			function writeItemStack(stat,tr){
+				if(stat && stat.length) {
+					const td = tr.insertCell();
+
+					let text = "";
+					for(let j = 0; j < stat.length;j++){
+						const entry = stat[j];
+						const name = getItemDisplayName(String(entry.id));
+						const count = entry.count;
+						text += name + ((count && count != 1) ? " x"+count : "") + ", "
+					}
+					td.appendChild(document.createTextNode(text.substring(0,text.length-2)))
+				} else {
+					const td = tr.insertCell();
+					td.style.color = "#888"
+					td.appendChild(document.createTextNode("N/A"))
+				}
+			}
+
 			//Load table based on a file
 			function loadTable(file){
 			console.log(file)
@@ -203,21 +279,21 @@
 				fr.onload = function(){
 					populateTable(file.name,fr.result);
 				}
-				
+
 				fr.readAsText(file);
 			}
-			
+
 			function populateTable(name,json){
 			const searchParams = new URLSearchParams(window.location.search);
 				console.log(searchParams);
 				globalData[0] = name;
 				globalData[1] = json;
-				
+
 				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0, totalArmor = 0, totalAccessories = 0, totalSpells = 0;
 
 				dragText = document.getElementById("dragText");
 				dragText.style.display = "none";
-				
+
 				console.log("Name: "+name)
 				table = document.getElementById('output');
 				table.border = 0;
@@ -231,7 +307,7 @@
 						nameCell.appendChild(document.createTextNode(" (Version: " + (obj.version ?? "N/A")+ ")"))
 						nameCell.colSpan = 12;
 						nameCell.style = "font-size:36px; text-align:center;";
-						
+
 						const header = table.insertRow();
 						header.insertCell().outerHTML = "<th>Level</th>";
 						header.insertCell().outerHTML = "<th>Strength</th>";
@@ -244,7 +320,7 @@
 						header.insertCell().outerHTML = "<th>Accessory</th>";
 						header.insertCell().outerHTML = "<th>Spell</th>";
 						header.insertCell().outerHTML = "<th>Abilities</th>";
-						header.insertCell().outerHTML = "<th>Shotlocks</th>";
+						header.insertCell().outerHTML = "<th>Itemstack</th>";
 
                     var tbody = table.createTBody();
 
@@ -254,7 +330,7 @@
 
 						let level = obj.levels?.[i] || {};
 						const td = tr.insertCell();
-						
+
 						td.appendChild(document.createTextNode(i))
 						if(i > 0) {
 							console.log(i+" "+totalAP);
@@ -278,16 +354,16 @@
 						writeStat(level.max_accessories,tr, totalAccessories)
 						writeStat(level.max_magics,tr, totalSpells)
 						writeStatArray(level.abilities,tr)
-						writeStatArray(level.shotlocks,tr)
+						writeItemStack(level.items,tr)
 					}
 			}
-			
+
 			/*const fileSelector = document.getElementById('file-selector');
 			fileSelector.addEventListener('change', (event) => {
 				const files = event.target.files;
 				loadTable(files[0]);
 			  });*/
-			  
+
 			const checkbox = document.getElementById('namespaces');
 			checkbox.addEventListener('change', (event) => {
 				console.log("Global JSON: "+globalData);
