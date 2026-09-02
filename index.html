@@ -1,8 +1,8 @@
 <html>
 	<head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
 		<style>
 			body{
 				background-color:#202124;
@@ -14,40 +14,41 @@
 				padding: 10px;
 				text-align: center;
 			}
-            th {
-              background-color:#202124;
-              position: sticky;
-              top: 0;
-            }
+			th {
+				background-color:#202124;
+				position: sticky;
+				top: 0;
+				vertical-align: bottom;
+			}
 			.level:hover {
 				color:yellow;
 				border: 1px solid yellow;
 			}
-            td {
-                border-color: #6e6e6e;
-            }
+			td {
+				border-color: #6e6e6e;
+			}
 
 			.level:hover td{
-                border-color: yellow;
-            }
-            h1 {
-                margin: auto;
-                width: 50%;
-                text-align: center;
-                padding: 10px;
-            }
-            .container {
-                width: 50%;
-                margin: auto;
-                padding: 10px;
-                text-align: center;
-            }
-            .info {
-                text-align: center;
-            }
-            #file-selector {
-                margin: 0 auto
-            }
+				border-color: yellow;
+			}
+			h1 {
+				margin: auto;
+				width: 50%;
+				text-align: center;
+				padding: 10px;
+			}
+			.container {
+				width: 50%;
+				margin: auto;
+				padding: 10px;
+				text-align: center;
+			}
+			.info {
+				text-align: center;
+			}
+			#file-selector {
+				margin: 0 auto
+			}
 			#drop_zone {
 				position: fixed;
 				top: 0;
@@ -85,9 +86,9 @@
 	</head>
 	<body>
 		<div id="drop_zone"></div>
-        <h1>Kingdom Keys Levelling Viewer</h1>
-        <p class="info">This displays the stat and ability gains from levels in Kingdom Keys. You can view the defaults included in Kingdom Keys as well as select a custom file for data packs.</p>
-        <p class="info">View the raw json files <a href="https://github.com/Wehavecookies56/Kingdom-Keys/tree/master/src/generated/resources/data/kingdomkeys/leveling">here</a></p>
+		<h1>Kingdom Keys Levelling Viewer</h1>
+		<p class="info">This displays the stat and ability gains from levels in Kingdom Keys. You can view the defaults included in Kingdom Keys as well as select a custom file for data packs.</p>
+		<p class="info">View the raw json files <a href="https://github.com/Wehavecookies56/Kingdom-Keys/tree/master/src/generated/resources/data/kingdomkeys/leveling">here</a></p>
 		<!--<input type="file" id="file-selector">-->
 		<p id="dragText" class="info" style="font-size:36px;"><b>Select a default file or drag and drop a custom JSON file below to view it</b></p>
 		<div class="settings">
@@ -97,23 +98,21 @@
 			<label><input type="radio" name="lang-mode" class="lang-mode" value="de"> Deutsch</label>
 			<label><input type="radio" name="lang-mode" class="lang-mode" value="ja"> 日本語</label>
 			<label><input type="radio" name="lang-mode" class="lang-mode" value="ru"> Русский</label>
-			<label><input type="radio" name="lang-mode" class="lang-mode" value="raw"> [NAMESPACES]</label>
+			<label><input type="radio" name="lang-mode" class="lang-mode" value="raw"> Show namespaces</label>
 		</div>
-        <div class="container">
-            <div class="row">
-                <div class="column column-33">
-                    <input type="button" class="button" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/generated/resources/data/kingdomkeys/leveling/warrior.json')">
-                </div>
-                <div class="column column-33">
-                    <input type="button" class="button" id="mystic" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/generated/resources/data/kingdomkeys/leveling/mystic.json')">
-                </div>
-                <div class="column column-33">
-                    <input type="button" class="button" id="guardian" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/generated/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
-                </div>
-            </div>
-
-
-        </div>
+		<div class="container">
+			<div class="row">
+				<div class="column column-33">
+					<input type="button" class="button" id="warrior" value="Default Warrior" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/generated/resources/data/kingdomkeys/leveling/warrior.json')">
+				</div>
+				<div class="column column-33">
+					<input type="button" class="button" id="mystic" value="Default Mystic" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/generated/resources/data/kingdomkeys/leveling/mystic.json')">
+				</div>
+				<div class="column column-33">
+					<input type="button" class="button" id="guardian" value="Default Guardian" onclick="fetchData('https://raw.githubusercontent.com/Wehavecookies56/Kingdom-Keys/master/src/generated/resources/data/kingdomkeys/leveling/guardian.json')"> <br>
+				</div>
+			</div>
+		</div>
 
 		<table id="output">
 			<!-- Empty output table -->
@@ -168,6 +167,10 @@
 						i = (end === -1 ? text.length : end + 1);
 						continue;
 					}
+					if(/\s/.test(c) && c !== " " && c !== "\t" && c !== "\n" && c !== "\r"){
+						out += " ";
+						continue;
+					}
 					out += c;
 				}
 				return out.replace(/,(\s*[}\]])/g, "$1");
@@ -176,7 +179,7 @@
 			function fetchLangFile(url){
 				return fetch(url)
 					.then(response => response.text())
-					.then(text => JSON.parse(stripJsonComments(text)));
+					.then(text => JSON.parse(stripJsonComments(text.replace(/^\uFEFF/, ""))));
 			}
 
 			Promise.all(Object.entries(LANG_FILES).map(([locale, url]) =>
@@ -223,28 +226,28 @@
 			}
 
 			function dropHandler(ev) {
-			  // Prevent default behavior (Prevent file from being opened)
-			  ev.preventDefault();
-			  dragCounter = 0;
-			  setDragHighlight(false);
+				// Prevent default behavior (Prevent file from being opened)
+				ev.preventDefault();
+				dragCounter = 0;
+				setDragHighlight(false);
 
-			  if (ev.dataTransfer.items) {
-				// Use DataTransferItemList interface to access the file(s)
-				[...ev.dataTransfer.items].forEach((item, i) => {
-				  // If dropped items aren't files, reject them
-				  if (item.kind === "file") {
-					const file = item.getAsFile();
-					console.log(file.name);
-					loadTable(file);
-				  }
-				});
-			  } else {
-				// Use DataTransfer interface to access the file(s)
-				[...ev.dataTransfer.files].forEach((file, i) => {
-					console.log(file.name);
-					loadTable(file);
-				});
-			  }
+				if (ev.dataTransfer.items) {
+					// Use DataTransferItemList interface to access the file(s)
+					[...ev.dataTransfer.items].forEach((item, i) => {
+						// If dropped items aren't files, reject them
+						if (item.kind === "file") {
+							const file = item.getAsFile();
+							console.log(file.name);
+							loadTable(file);
+						}
+					});
+				} else {
+					// Use DataTransfer interface to access the file(s)
+					[...ev.dataTransfer.files].forEach((file, i) => {
+						console.log(file.name);
+						loadTable(file);
+					});
+				}
 			}
 
 			window.addEventListener("dragenter", dragEnterHandler);
@@ -323,7 +326,7 @@
 			}
 
 			//Write numeric stat
-            function writeStat(stat,tr, totalStat){
+			function writeStat(stat,tr, totalStat){
 				if(stat) {
 					let plus = stat >= 0;
 					const td = tr.insertCell();
@@ -341,7 +344,7 @@
 			//Write array of ability ids, translating Kingdom Keys abilities to their display name
 			function writeStatArray(stat,tr){
 				if(stat) {
-				    const td = tr.insertCell();
+					const td = tr.insertCell();
 					td.style.color = stat < 0 ? "red" : td.style.color;
 
 					let text = "";
@@ -356,8 +359,6 @@
 				}
 			}
 
-			//Write the itemstack given at this level (array of {id, count}), translating
-			//Kingdom Keys items to their display name
 			function writeItemStack(stat,tr){
 				if(stat && stat.length) {
 					const td = tr.insertCell();
@@ -379,7 +380,7 @@
 
 			//Load table based on a file
 			function loadTable(file){
-			console.log(file)
+				console.log(file)
 				console.log(file.name)
 				var fr = new FileReader();
 				fr.onload = function(){
@@ -390,12 +391,12 @@
 			}
 
 			function populateTable(name,json){
-			const searchParams = new URLSearchParams(window.location.search);
+				const searchParams = new URLSearchParams(window.location.search);
 				console.log(searchParams);
 				globalData[0] = name;
 				globalData[1] = json;
 
-				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0, totalArmor = 0, totalAccessories = 0, totalSpells = 0;
+				totalStr = 1, totalMag = 1, totalDef = 1, totalAP = 0, totalHP = 20, totalMP = 0, totalArmor = 0, totalAccessories = 0, totalSpells = 0, totalItems = 0;
 
 				dragText = document.getElementById("dragText");
 				dragText.style.display = "none";
@@ -406,69 +407,75 @@
 				table.innerHTML = "";
 
 				const obj = JSON.parse(json);
-                        var thead = table.createTHead();
-						const firstHeader = thead.insertRow();
-						nameCell = firstHeader.insertCell();
-						nameCell.appendChild(document.createTextNode(name.substring(0,name.indexOf(".")).toUpperCase()))
-						nameCell.appendChild(document.createTextNode(" (Version: " + (obj.version ?? "N/A")+ ")"))
-						nameCell.colSpan = 12;
-						nameCell.style = "font-size:36px; text-align:center;";
+				var thead = table.createTHead();
+				const firstHeader = thead.insertRow();
+				nameCell = firstHeader.insertCell();
+				nameCell.appendChild(document.createTextNode(name.substring(0,name.indexOf(".")).toUpperCase()))
+				nameCell.appendChild(document.createTextNode(" (Version: " + (obj.version ?? "N/A")+ ")"))
+				nameCell.colSpan = 13;
+				nameCell.style = "font-size:36px; text-align:center;";
 
-						const header = table.insertRow();
-						header.insertCell().outerHTML = "<th>Level</th>";
-						header.insertCell().outerHTML = "<th>Strength</th>";
-						header.insertCell().outerHTML = "<th>Magic</th>";
-						header.insertCell().outerHTML = "<th>Defense</th>";
-						header.insertCell().outerHTML = "<th>AP</th>";
-						header.insertCell().outerHTML = "<th>Max HP</th>";
-						header.insertCell().outerHTML = "<th>Max MP</th>";
-						header.insertCell().outerHTML = "<th>Armor</th>";
-						header.insertCell().outerHTML = "<th>Accessory</th>";
-						header.insertCell().outerHTML = "<th>Spell</th>";
-						header.insertCell().outerHTML = "<th>Abilities</th>";
-						header.insertCell().outerHTML = "<th>Itemstack</th>";
+				// Two-row header: Armor/Accessory/Spell/Consumable share a merged "Slots" cell above
+				// them, so it reads as one group of unlockable slots instead of four unrelated columns.
+				// Every other column spans both header rows via rowspan so it stays vertically centered.
+				const header = table.insertRow();
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Level</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Strength</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Magic</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Defense</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">AP</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Max HP</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Max MP</th>";
+				header.insertCell().outerHTML = "<th colspan=\"4\">Slots</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Abilities</th>";
+				header.insertCell().outerHTML = "<th rowspan=\"2\">Itemstack</th>";
 
-                    var tbody = table.createTBody();
+				const slotsHeader = table.insertRow();
+				slotsHeader.insertCell().outerHTML = "<th>Armor</th>";
+				slotsHeader.insertCell().outerHTML = "<th>Accessory</th>";
+				slotsHeader.insertCell().outerHTML = "<th>Spell</th>";
+				slotsHeader.insertCell().outerHTML = "<th>Consumable</th>";
 
-					for (let i = 0; i <= 100; i++) {
-						const tr = tbody.insertRow();
-						tr.className = "level"
+				const groupRowHeight = header.getBoundingClientRect().height;
+				slotsHeader.querySelectorAll("th").forEach(th => { th.style.top = groupRowHeight + "px"; });
 
-						let level = obj.levels?.[i] || {};
-						const td = tr.insertCell();
+				var tbody = table.createTBody();
 
-						td.appendChild(document.createTextNode(i))
-						if(i > 0) {
-							console.log(i+" "+totalAP);
-							totalStr += level.str ? level.str : 0;
-							totalMag += level.mag ? level.mag : 0;
-							totalDef += level.def ? level.def : 0;
-							totalAP += level.ap ? level.ap : 0;
-							totalHP += level.maxhp ? level.maxhp : 0;
-							totalMP += level.maxmp ? level.maxmp : 0;
-							totalArmor += level.max_armors ? level.max_armors : 0;
-							totalAccessories += level.max_accessories ? level.max_accessories : 0;
-							totalSpells += level.max_magics ? level.max_magics : 0;
-						}
-						writeStat(level.str,tr, totalStr)
-						writeStat(level.mag,tr, totalMag)
-						writeStat(level.def,tr, totalDef)
-						writeStat(level.ap,tr, totalAP)
-						writeStat(level.maxhp,tr, totalHP)
-						writeStat(level.maxmp,tr, totalMP)
-						writeStat(level.max_armors,tr, totalArmor)
-						writeStat(level.max_accessories,tr, totalAccessories)
-						writeStat(level.max_magics,tr, totalSpells)
-						writeStatArray(level.abilities,tr)
-						writeItemStack(level.items,tr)
+				for (let i = 0; i <= 100; i++) {
+					const tr = tbody.insertRow();
+					tr.className = "level"
+
+					let level = obj.levels?.[i] || {};
+					const td = tr.insertCell();
+
+					td.appendChild(document.createTextNode(i))
+					if(i > 0) {
+						console.log(i+" "+totalAP);
+						totalStr += level.str ? level.str : 0;
+						totalMag += level.mag ? level.mag : 0;
+						totalDef += level.def ? level.def : 0;
+						totalAP += level.ap ? level.ap : 0;
+						totalHP += level.maxhp ? level.maxhp : 0;
+						totalMP += level.maxmp ? level.maxmp : 0;
+						totalArmor += level.max_armors ? level.max_armors : 0;
+						totalAccessories += level.max_accessories ? level.max_accessories : 0;
+						totalSpells += level.max_magics ? level.max_magics : 0;
+						totalItems += level.max_items ? level.max_items : 0;
 					}
+					writeStat(level.str,tr, totalStr)
+					writeStat(level.mag,tr, totalMag)
+					writeStat(level.def,tr, totalDef)
+					writeStat(level.ap,tr, totalAP)
+					writeStat(level.maxhp,tr, totalHP)
+					writeStat(level.maxmp,tr, totalMP)
+					writeStat(level.max_armors,tr, totalArmor)
+					writeStat(level.max_accessories,tr, totalAccessories)
+					writeStat(level.max_magics,tr, totalSpells)
+					writeStat(level.max_items,tr, totalItems)
+					writeStatArray(level.abilities,tr)
+					writeItemStack(level.items,tr)
+				}
 			}
-
-			/*const fileSelector = document.getElementById('file-selector');
-			fileSelector.addEventListener('change', (event) => {
-				const files = event.target.files;
-				loadTable(files[0]);
-			  });*/
 
 			document.querySelectorAll('input[name="lang-mode"]').forEach(radio => {
 				radio.addEventListener('change', (event) => {
